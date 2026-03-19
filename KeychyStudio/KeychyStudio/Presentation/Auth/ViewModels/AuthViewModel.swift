@@ -19,7 +19,8 @@ final class AuthViewModel {
     var showCheck = false
 
     init() {
-        try? Auth.auth().signOut()
+        // TODO: 배포 시 자동 로그인 제거 (signOut 복원)
+        isLoggedIn = Auth.auth().currentUser != nil
     }
 
     func login() async {
