@@ -4,10 +4,6 @@
   **앱 내 공지사항 발송, 키링 이벤트 배포 등 운영 업무를 처리**합니다.
 
 <img width="312" alt="image" src="https://github.com/user-attachments/assets/734d0cd9-4ea3-4c60-8ec5-53ffb1d3bd3d" />
-<img width="612" alt="image" src="https://github.com/user-attachments/assets/a108c38b-dce3-4d07-b081-69336da71bbe" />
-<img width="452" alt="image" src="https://github.com/user-attachments/assets/f031595d-dfaf-420f-8e8c-65d4a171605e" />
-<img width="452" alt="image" src="https://github.com/user-attachments/assets/8ca6225c-fa33-416c-a2a9-14312652d94c" />
-
 
   ## 기능
 
