@@ -14,10 +14,7 @@ enum DeepLinkDestination: String, CaseIterable {
 }
 
 struct AnnouncementView: View {
-    @State private var title = ""
-    @State private var subtitle = ""
-    @State private var content = ""
-    @State private var destination: DeepLinkDestination = .home
+    @Bindable var viewModel: AnnouncementViewModel
     @State private var showConfirmAlert = false
 
     var body: some View {
@@ -33,16 +30,21 @@ struct AnnouncementView: View {
                 } label: {
                     Image(systemName: "paperplane.fill")
                 }
-                .disabled(title.isEmpty || content.isEmpty)
+                .disabled(viewModel.title.isEmpty || viewModel.body.isEmpty)
             }
         }
         .alert("공지 발송", isPresented: $showConfirmAlert) {
             Button("취소", role: .cancel) {}
             Button("발송", role: .destructive) {
-                // TODO: Firestore에 저장
+                Task { await viewModel.send() }
             }
         } message: {
             Text("꺼진 불도 다시 보자.?")
+        }
+        .alert("발송 완료", isPresented: $viewModel.sendSuccess) {
+            Button("확인", role: .cancel) {}
+        } message: {
+            Text("공지가 성공적으로 발송되었습니다.")
         }
     }
 
@@ -58,11 +60,11 @@ struct AnnouncementView: View {
                             .font(.title3)
                             .fontWeight(.medium)
                         Spacer()
-                        Text("\(title.count)/30")
+                        Text("\(viewModel.title.count)/30")
                             .font(.caption)
-                            .foregroundStyle(title.count > 30 ? Color.red : Color.gray)
+                            .foregroundStyle(viewModel.title.count > 30 ? Color.red : Color.gray)
                     }
-                    TextField("타이틀을 입력하세요.", text: $title)
+                    TextField("타이틀을 입력하세요.", text: $viewModel.title)
                         .font(.title3)
                         .textFieldStyle(.plain)
                         .padding(10)
@@ -81,11 +83,11 @@ struct AnnouncementView: View {
                                 .foregroundStyle(.tertiary)
                         }
                         Spacer()
-                        Text("\(subtitle.count)/30")
+                        Text("\(viewModel.subtitle.count)/30")
                             .font(.caption)
-                            .foregroundStyle(subtitle.count > 30 ? Color.red : Color.gray)
+                            .foregroundStyle(viewModel.subtitle.count > 30 ? Color.red : Color.gray)
                     }
-                    TextField("서브타이틀을 입력하세요.", text: $subtitle)
+                    TextField("서브타이틀을 입력하세요.", text: $viewModel.subtitle)
                         .font(.title3)
                         .textFieldStyle(.plain)
                         .padding(10)
@@ -97,7 +99,7 @@ struct AnnouncementView: View {
                     Text("딥링크")
                         .font(.title3)
                         .fontWeight(.medium)
-                    Picker("", selection: $destination) {
+                    Picker("", selection: $viewModel.deepLink) {
                         ForEach(DeepLinkDestination.allCases, id: \.self) { dest in
                             Text(dest.rawValue).tag(dest)
                         }
@@ -112,11 +114,11 @@ struct AnnouncementView: View {
                             .font(.title3)
                             .fontWeight(.medium)
                         Spacer()
-                        Text("\(content.count)/120")
+                        Text("\(viewModel.body.count)/120")
                             .font(.caption)
-                            .foregroundStyle(content.count > 120 ? Color.red : Color.gray)
+                            .foregroundStyle(viewModel.body.count > 120 ? Color.red : Color.gray)
                     }
-                    TextEditor(text: $content)
+                    TextEditor(text: $viewModel.body)
                         .font(.title3)
                         .padding(6)
                         .frame(minHeight: 100, maxHeight: .infinity)
@@ -155,10 +157,10 @@ struct AnnouncementView: View {
                     // 알림 내용
                     VStack(alignment: .leading, spacing: 5) {
                         HStack {
-                            Text(title.isEmpty ? "타이틀" : title)
+                            Text(viewModel.title.isEmpty ? "타이틀" : viewModel.title)
                                 .font(.body)
                                 .fontWeight(.semibold)
-                                .foregroundStyle(title.isEmpty ? .secondary : .primary)
+                                .foregroundStyle(viewModel.title.isEmpty ? .secondary : .primary)
                                 .lineLimit(1)
 
                             Spacer()
@@ -168,16 +170,16 @@ struct AnnouncementView: View {
                                 .foregroundStyle(.tertiary)
                         }
 
-                        if !subtitle.isEmpty {
-                            Text(subtitle)
+                        if !viewModel.subtitle.isEmpty {
+                            Text(viewModel.subtitle)
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                                 .lineLimit(1)
                         }
 
-                        Text(content.isEmpty ? "내용을 입력하세요" : content)
+                        Text(viewModel.body.isEmpty ? "내용을 입력하세요" : viewModel.body)
                             .font(.subheadline)
-                            .foregroundStyle(content.isEmpty ? .secondary : .primary)
+                            .foregroundStyle(viewModel.body.isEmpty ? .secondary : .primary)
                             .lineLimit(4)
                     }
                 }
@@ -187,7 +189,7 @@ struct AnnouncementView: View {
 
                 // 딥링크 목적지
                 HStack(spacing: 6) {
-                    Text("딥링크 👉 \(destination.rawValue)")
+                    Text("딥링크 👉 \(viewModel.deepLink.rawValue)")
                         .font(.body)
                 }
                 .foregroundStyle(.tertiary)
@@ -204,5 +206,5 @@ struct AnnouncementView: View {
 }
 
 #Preview {
-    AnnouncementView()
+    AnnouncementView(viewModel: AnnouncementViewModel())
 }

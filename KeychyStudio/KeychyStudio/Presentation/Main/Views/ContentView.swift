@@ -39,6 +39,7 @@ enum SidebarItem: String, CaseIterable {
 
 struct ContentView: View {
     @State private var selection: SidebarItem = .sendNotification
+    @State private var announcementVM = AnnouncementViewModel()
 
     var body: some View {
         NavigationSplitView {
@@ -57,11 +58,11 @@ struct ContentView: View {
             Group {
                 switch selection {
                 case .sendNotification:
-                    AnnouncementView()
+                    AnnouncementView(viewModel: announcementVM)
                 case .keyringEvent:
                     KeyringEventView()
                 case .history:
-                    AnnouncementHistoryView()
+                    AnnouncementHistoryView(viewModel: announcementVM)
                 }
             }
             .navigationTitle("Keychy Studio")

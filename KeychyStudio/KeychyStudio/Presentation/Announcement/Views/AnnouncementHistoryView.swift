@@ -8,54 +8,9 @@
 import SwiftUI
 import AppKit
 
-// 발송 이력 아이템
-struct HistoryItem: Identifiable {
-    enum Category {
-        case announcement
-        case keyringEvent
-
-        var color: Color {
-            switch self {
-            case .announcement: .blue
-            case .keyringEvent: .purple
-            }
-        }
-    }
-
-    let id: String
-    let category: Category
-    let tag: String       // 공지: 딥링크 값 (홈, 공방, 앱스토어) / 키링 배포: "키링 배포"
-    let title: String
-    let subtitle: String
-    let body: String
-    let sentAt: Date
-
-    private static let dateFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.dateFormat = "yyyy.MM.dd HH:mm"
-        return f
-    }()
-
-    var formattedDate: String {
-        Self.dateFormatter.string(from: sentAt)
-    }
-}
-
-// 더미 데이터
-private let dummyHistory: [HistoryItem] = [
-    .init(
-        id: "h1",
-        category: .announcement,
-        tag: "홈",
-        title: "서버 점검 안내",
-        subtitle: "3월 20일 새벽 2시~4시",
-        body: "안정적인 서비스 제공을 위해 서버 점검을 진행합니다. 이용에 불편을 드려 죄송합니다.",
-        sentAt: Date().addingTimeInterval(-3600)
-    ),
-]
-
 struct AnnouncementHistoryView: View {
-    @State private var selectedItem: HistoryItem?
+    @Bindable var viewModel: AnnouncementViewModel
+    @State private var selectedItem: HistoryDoc?
 
     var body: some View {
         HStack(spacing: 0) {
@@ -68,14 +23,29 @@ struct AnnouncementHistoryView: View {
 
     private var listSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("총 \(dummyHistory.count)건")
+            Text("총 \(viewModel.history.count)건")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
 
-            ScrollView {
-                LazyVStack(spacing: 8) {
-                    ForEach(Array(dummyHistory.enumerated()), id: \.element.id) { index, item in
-                        historyRow(item, number: index + 1)
+            if viewModel.isLoadingHistory {
+                ProgressView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if viewModel.history.isEmpty {
+                VStack(spacing: 8) {
+                    Image(systemName: "tray")
+                        .font(.system(size: 32))
+                        .foregroundStyle(.tertiary)
+                    Text("발송 이력이 없습니다")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                ScrollView {
+                    LazyVStack(spacing: 8) {
+                        ForEach(Array(viewModel.history.enumerated()), id: \.element.id) { index, item in
+                            historyRow(item, number: index + 1)
+                        }
                     }
                 }
             }
@@ -86,18 +56,17 @@ struct AnnouncementHistoryView: View {
 
     // MARK: - 이력 행
 
-    private func historyRow(_ item: HistoryItem, number: Int) -> some View {
+    private func historyRow(_ item: HistoryDoc, number: Int) -> some View {
         let isSelected = selectedItem?.id == item.id
+        let tagColor: Color = item.category == .announcement ? .blue : .purple
 
         return HStack(spacing: 12) {
-            // 번호
             Text("\(number)")
                 .font(.subheadline)
                 .fontWeight(.medium)
                 .foregroundStyle(.secondary)
                 .frame(width: 24)
 
-            // 타이틀 + 날짜
             VStack(alignment: .leading, spacing: 3) {
                 Text(item.title)
                     .font(.subheadline)
@@ -111,13 +80,12 @@ struct AnnouncementHistoryView: View {
 
             Spacer()
 
-            // 카테고리 태그
             Text(item.tag)
                 .font(.caption2)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 3)
-                .background(item.category.color.opacity(0.1))
-                .foregroundStyle(item.category.color)
+                .background(tagColor.opacity(0.1))
+                .foregroundStyle(tagColor)
                 .clipShape(Capsule())
         }
         .padding(10)
@@ -153,7 +121,7 @@ struct AnnouncementHistoryView: View {
                     VStack(alignment: .leading, spacing: 16) {
                         HStack {
                             HStack(spacing: 4) {
-                                Text("딥링크 :")
+                                Text(item.category == .announcement ? "딥링크 :" : "구분 :")
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
                                 Text(item.tag)
@@ -168,15 +136,12 @@ struct AnnouncementHistoryView: View {
                                 .foregroundStyle(.tertiary)
                         }
 
-                        // 타이틀
                         copyableField(label: "타이틀", value: item.title)
 
-                        // 서브타이틀
                         if !item.subtitle.isEmpty {
                             copyableField(label: "서브타이틀", value: item.subtitle)
                         }
 
-                        // 내용
                         if !item.body.isEmpty {
                             copyableField(label: "내용", value: item.body)
                         }
@@ -238,5 +203,5 @@ struct AnnouncementHistoryView: View {
 }
 
 #Preview {
-    AnnouncementHistoryView()
+    AnnouncementHistoryView(viewModel: AnnouncementViewModel())
 }
