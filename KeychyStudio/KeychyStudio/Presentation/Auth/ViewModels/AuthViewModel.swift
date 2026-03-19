@@ -18,13 +18,8 @@ final class AuthViewModel {
     var isLoggedIn = false
     var showCheck = false
 
-    // Auth 상태 리스너 핸들
     init() {
-        // 앱 실행 시 기존 로그인 상태 확인
-        _ = Auth.auth().addStateDidChangeListener { [weak self] _, user in
-            guard let self else { return }
-            self.isLoggedIn = user != nil
-        }
+        try? Auth.auth().signOut()
     }
 
     func login() async {
@@ -33,11 +28,11 @@ final class AuthViewModel {
 
         do {
             try await Auth.auth().signIn(withEmail: email, password: password)
-            // 로그인 성공 → 체크 표시 후 전환
             isLoading = false
             showCheck = true
 
-            try await Task.sleep(for: .seconds(1))
+            // 체크 표시 1.5초 보여준 후 메인 화면으로 전환
+            try await Task.sleep(for: .seconds(1.5))
             isLoggedIn = true
         } catch {
             isLoading = false

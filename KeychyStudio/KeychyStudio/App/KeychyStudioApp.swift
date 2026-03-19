@@ -7,6 +7,7 @@
 
 import SwiftUI
 import FirebaseCore
+import FirebaseAuth
 
 @main
 struct KeychyStudioApp: App {
@@ -14,6 +15,8 @@ struct KeychyStudioApp: App {
 
     init() {
         FirebaseApp.configure()
+        // macOS에서 Firebase Auth 키체인 접근 허용
+        try? Auth.auth().useUserAccessGroup(nil)
         // Firebase 초기화 후에 AuthViewModel 생성해야 Auth.auth() 접근 가능
         _authViewModel = State(initialValue: AuthViewModel())
     }
@@ -23,7 +26,7 @@ struct KeychyStudioApp: App {
             if authViewModel.isLoggedIn {
                 ContentView()
             } else {
-                LoginView()
+                LoginView(viewModel: authViewModel)
             }
         }
         .windowResizability(.contentSize)

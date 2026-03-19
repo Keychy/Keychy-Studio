@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct LoginView: View {
-    @State private var viewModel = AuthViewModel()
+    @Bindable var viewModel: AuthViewModel
 
     var body: some View {
         VStack(spacing: 24) {
@@ -55,6 +55,9 @@ struct LoginView: View {
                 Text(viewModel.errorMessage)
                     .font(.caption)
                     .foregroundStyle(.red)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(width: 260)
             }
 
             // 로그인 버튼 / 로딩 / 체크
@@ -84,5 +87,5 @@ struct LoginView: View {
 }
 
 #Preview {
-    LoginView()
+    LoginView(viewModel: AuthViewModel())
 }
