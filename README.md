@@ -1,10 +1,11 @@
 # Keychy Studio (v1)
 
+<img width="200" alt="KeychyStudio_AppIcon-watchOS-Default-129x129@2x" src="https://github.com/user-attachments/assets/b5251e5c-b2fc-47e8-8524-8ac032acb1c3" />
+
+
   [Keychy](https://apps.apple.com/app/keychy) 서비스 운영을 위한 macOS 관리 앱입니다.  
   **앱 내 공지사항 발송, 키링 이벤트 배포 등 운영 업무를 처리**합니다.
-
-<img width="312" alt="image" src="https://github.com/user-attachments/assets/734d0cd9-4ea3-4c60-8ec5-53ffb1d3bd3d" />
-
+  
   ## 기능
 
   ### 공지 발송
