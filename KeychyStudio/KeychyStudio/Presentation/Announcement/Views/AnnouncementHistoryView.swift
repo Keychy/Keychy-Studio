@@ -136,6 +136,11 @@ struct AnnouncementHistoryView: View {
                                 .foregroundStyle(.tertiary)
                         }
 
+                        // 키링 배포인 경우 추가 정보 표시
+                        if item.category == .keyringEvent {
+                            keyringEventDetail(item)
+                        }
+
                         copyableField(label: "타이틀", value: item.title)
 
                         if !item.subtitle.isEmpty {
@@ -144,6 +149,11 @@ struct AnnouncementHistoryView: View {
 
                         if !item.body.isEmpty {
                             copyableField(label: "내용", value: item.body)
+                        }
+
+                        // 키링 배포인 경우 공유 링크
+                        if let shareLink = item.shareLink {
+                            copyableField(label: "공유 링크", value: shareLink)
                         }
                     }
                     .padding(24)
@@ -162,6 +172,53 @@ struct AnnouncementHistoryView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.primary.opacity(0.03))
+    }
+
+    // MARK: - 키링 배포 상세
+
+    private func keyringEventDetail(_ item: HistoryDoc) -> some View {
+        HStack(spacing: 16) {
+            // 키링 이미지
+            if let bodyImage = item.bodyImage, !bodyImage.isEmpty {
+                AsyncImage(url: URL(string: bodyImage)) { image in
+                    image.resizable().scaledToFit()
+                } placeholder: {
+                    Image(systemName: "photo")
+                        .font(.system(size: 20))
+                        .foregroundStyle(.tertiary)
+                }
+                .frame(width: 60, height: 60)
+                .glassEffect(in: .rect(cornerRadius: 12))
+            }
+
+            VStack(alignment: .leading, spacing: 6) {
+                if let name = item.keyringName {
+                    HStack(spacing: 4) {
+                        Text("키링")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                        Text(name)
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                    }
+                }
+
+                if let uid = item.deployedBy {
+                    HStack(spacing: 4) {
+                        Text("배포자")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                        Text(viewModel.nicknameCache[uid] ?? uid)
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                    }
+                }
+            }
+
+            Spacer()
+        }
+        .padding(12)
+        .glassEffect(in: .rect(cornerRadius: 12))
     }
 
     // MARK: - 복사 가능 필드

@@ -96,6 +96,8 @@ final class KeyringEventViewModel {
     var eventTitle = ""
     var eventSubtitle = ""
     var eventBody = ""
+    var isUnlimitedDeployment = true
+    var expiresAt = Calendar.current.date(byAdding: .day, value: 7, to: Date()) ?? Date()
     var isLoading = false
     var errorMessage = ""
     var deploySuccess = false
@@ -241,6 +243,27 @@ final class KeyringEventViewModel {
         deploySuccess = false
 
         do {
+            // 1. PostOffice 문서 생성 (collect 타입 → 무한 수령 가능)
+            let postOfficeRef = db.collection("PostOffice").document()
+            let postOfficeId = postOfficeRef.documentID
+            let shareLink = "https://keychy-f6011.web.app/collect/\(postOfficeId)"
+
+            var postOfficeData: [String: Any] = [
+                "type": "collect",
+                "senderId": operatorId,
+                "keyringId": keyring.id,
+                "shareLink": shareLink,
+                "createdAt": FieldValue.serverTimestamp()
+            ]
+
+            // 무한배포가 아닌 경우에만 expiresAt 저장 (nil → 무한배포로 하위호환)
+            if !isUnlimitedDeployment {
+                postOfficeData["expiresAt"] = Timestamp(date: expiresAt)
+            }
+
+            try await postOfficeRef.setData(postOfficeData)
+
+            // 2. keyringEvents 문서 생성 (푸시 트리거 + postOfficeId 포함)
             try await db.collection("keyringEvents").addDocument(data: [
                 "keyringId": keyring.id,
                 "keyringName": keyring.name,
@@ -251,6 +274,7 @@ final class KeyringEventViewModel {
                 "title": eventTitle,
                 "subtitle": eventSubtitle,
                 "body": eventBody,
+                "postOfficeId": postOfficeId,
                 "deployedAt": FieldValue.serverTimestamp(),
                 "deployedBy": operatorId
             ])
@@ -258,6 +282,8 @@ final class KeyringEventViewModel {
             eventTitle = ""
             eventSubtitle = ""
             eventBody = ""
+            isUnlimitedDeployment = true
+            expiresAt = Calendar.current.date(byAdding: .day, value: 7, to: Date()) ?? Date()
             selectedKeyring = nil
             isLoading = false
             deploySuccess = true

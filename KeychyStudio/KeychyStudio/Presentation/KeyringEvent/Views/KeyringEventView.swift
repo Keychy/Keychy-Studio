@@ -86,7 +86,11 @@ struct KeyringEventView: View {
                 Task { await viewModel.deploy() }
             }
         } message: {
-            Text("정말 배포하시겠습니까?\n전체 유저에게 푸시가 전송됩니다.")
+            if viewModel.isUnlimitedDeployment {
+                Text("정말 배포하시겠습니까?\n전체 유저에게 푸시가 전송됩니다.\n(무한 배포)")
+            } else {
+                Text("정말 배포하시겠습니까?\n전체 유저에게 푸시가 전송됩니다.\n(만료: \(viewModel.expiresAt.formatted(date: .abbreviated, time: .shortened)))")
+            }
         }
         .alert("배포 완료", isPresented: $viewModel.deploySuccess) {
             Button("확인", role: .cancel) {}
@@ -232,6 +236,34 @@ struct KeyringEventView: View {
                             infoCard(icon: "sparkles", label: "이펙트", value: keyring.particleId)
                             infoCard(icon: "speaker.wave.2", label: "사운드", value: keyring.soundId)
                             infoCard(icon: "person", label: "만든이", value: viewModel.nickname(for: keyring.authorId))
+                        }
+
+                        // 배포 설정
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("배포 설정")
+                                .font(.title3)
+                                .fontWeight(.medium)
+
+                            // Toggle: @Bindable 없이 직접 바인딩 생성
+                            // @Observable은 프로퍼티 변경을 자동 추적하므로 Binding(get:set:)으로 연결
+                            Toggle("무한 배포", isOn: Binding(
+                                get: { viewModel.isUnlimitedDeployment },
+                                set: { viewModel.isUnlimitedDeployment = $0 }
+                            ))
+                            .toggleStyle(.switch)
+
+                            if !viewModel.isUnlimitedDeployment {
+                                DatePicker(
+                                    "만료일",
+                                    selection: Binding(
+                                        get: { viewModel.expiresAt },
+                                        set: { viewModel.expiresAt = $0 }
+                                    ),
+                                    in: Date()...,
+                                    displayedComponents: [.date, .hourAndMinute]
+                                )
+                                .datePickerStyle(.field)
+                            }
                         }
 
                         // 배포 폼

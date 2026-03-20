@@ -71,6 +71,7 @@ exports.onKeyringEventCreated = onDocumentCreated(
       data: {
         type: "keyringEvent",
         keyringId: data.keyringId || "",
+        postOfficeId: data.postOfficeId || "",
       },
     };
 

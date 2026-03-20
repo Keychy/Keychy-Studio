@@ -11,12 +11,14 @@ enum SidebarItem: String, CaseIterable {
     case sendNotification = "알림 보내기!"
     case keyringEvent = "키링 배포"
     case history = "발송 이력"
+    case activeEvents = "키링 배포 관리"
 
     var icon: String {
         switch self {
         case .sendNotification: "paperplane"
         case .keyringEvent: "gift"
         case .history: "list.clipboard"
+        case .activeEvents: "shippingbox"
         }
     }
 
@@ -28,7 +30,7 @@ enum SidebarItem: String, CaseIterable {
     var section: Section {
         switch self {
         case .sendNotification, .keyringEvent: .announce
-        case .history: .manage
+        case .history, .activeEvents: .manage
         }
     }
 
@@ -63,6 +65,8 @@ struct ContentView: View {
                     KeyringEventView()
                 case .history:
                     AnnouncementHistoryView(viewModel: announcementVM)
+                case .activeEvents:
+                    ActiveEventManagementView()
                 }
             }
             .navigationTitle("Keychy Studio")

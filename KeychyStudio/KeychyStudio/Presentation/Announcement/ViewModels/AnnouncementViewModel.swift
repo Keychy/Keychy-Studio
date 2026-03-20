@@ -30,6 +30,12 @@ struct HistoryDoc: Identifiable, Hashable {
     let body: String
     let sentAt: Date
 
+    // 키링 배포 전용 필드
+    let keyringName: String?
+    let bodyImage: String?
+    let postOfficeId: String?
+    let deployedBy: String?
+
     // 공지 문서 → 모델
     init?(announcementId: String, data: [String: Any]) {
         self.id = announcementId
@@ -43,6 +49,10 @@ struct HistoryDoc: Identifiable, Hashable {
         self.subtitle = data["subtitle"] as? String ?? ""
         self.body = data["body"] as? String ?? ""
         self.tag = deepLink
+        self.keyringName = nil
+        self.bodyImage = nil
+        self.postOfficeId = nil
+        self.deployedBy = nil
 
         if let timestamp = data["sentAt"] as? Timestamp {
             self.sentAt = timestamp.dateValue()
@@ -62,12 +72,22 @@ struct HistoryDoc: Identifiable, Hashable {
         self.title = title
         self.subtitle = data["subtitle"] as? String ?? ""
         self.body = data["body"] as? String ?? ""
+        self.keyringName = data["keyringName"] as? String
+        self.bodyImage = data["bodyImage"] as? String
+        self.postOfficeId = data["postOfficeId"] as? String
+        self.deployedBy = data["deployedBy"] as? String
 
         if let timestamp = data["deployedAt"] as? Timestamp {
             self.sentAt = timestamp.dateValue()
         } else {
             self.sentAt = Date()
         }
+    }
+
+    // postOfficeId로 공유 링크 생성
+    var shareLink: String? {
+        guard let postOfficeId else { return nil }
+        return "https://keychy-f6011.web.app/collect/\(postOfficeId)"
     }
 
     private static let dateFormatter: DateFormatter = {
@@ -103,6 +123,7 @@ final class AnnouncementViewModel {
     // 발송 이력 (공지 + 키링 배포 통합)
     var history: [HistoryDoc] = []
     var isLoadingHistory = false
+    var nicknameCache: [String: String] = [:]
 
     private let db = Firestore.firestore()
 
@@ -162,6 +183,16 @@ final class AnnouncementViewModel {
             }
             let keyringEvents = krSnap.documents.compactMap {
                 HistoryDoc(keyringEventId: $0.documentID, data: $0.data())
+            }
+
+            // 배포자 닉네임 fetch
+            let unknownUIDs = Set(keyringEvents.compactMap(\.deployedBy))
+                .filter { nicknameCache[$0] == nil }
+            for uid in unknownUIDs {
+                let doc = try? await db.collection("User").document(uid).getDocument()
+                if let nickname = doc?.data()?["nickname"] as? String {
+                    nicknameCache[uid] = nickname
+                }
             }
 
             // 시간순 내림차순 합치기
