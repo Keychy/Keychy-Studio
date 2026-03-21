@@ -96,6 +96,7 @@ final class KeyringEventViewModel {
     var eventTitle = ""
     var eventSubtitle = ""
     var eventBody = ""
+    var senderDisplayName = "KEYCHY"
     var isUnlimitedDeployment = true
     var expiresAt = Calendar.current.date(byAdding: .day, value: 7, to: Date()) ?? Date()
     var isLoading = false
@@ -253,6 +254,7 @@ final class KeyringEventViewModel {
                 "senderId": operatorId,
                 "keyringId": keyring.id,
                 "shareLink": shareLink,
+                "senderDisplayName": senderDisplayName,
                 "createdAt": FieldValue.serverTimestamp()
             ]
 
@@ -282,6 +284,7 @@ final class KeyringEventViewModel {
             eventTitle = ""
             eventSubtitle = ""
             eventBody = ""
+            senderDisplayName = "KEYCHY"
             isUnlimitedDeployment = true
             expiresAt = Calendar.current.date(byAdding: .day, value: 7, to: Date()) ?? Date()
             selectedKeyring = nil

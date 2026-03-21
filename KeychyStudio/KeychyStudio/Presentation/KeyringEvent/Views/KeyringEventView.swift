@@ -244,8 +244,20 @@ struct KeyringEventView: View {
                                 .font(.title3)
                                 .fontWeight(.medium)
 
-                            // Toggle: @Bindable 없이 직접 바인딩 생성
-                            // @Observable은 프로퍼티 변경을 자동 추적하므로 Binding(get:set:)으로 연결
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("보낸 사람 표시명")
+                                    .font(.body)
+                                    .fontWeight(.medium)
+                                TextField("KEYCHY", text: Binding(
+                                    get: { viewModel.senderDisplayName },
+                                    set: { viewModel.senderDisplayName = $0 }
+                                ))
+                                .font(.body)
+                                .textFieldStyle(.plain)
+                                .padding(10)
+                                .glassEffect(.regular.tint(.clear))
+                            }
+
                             Toggle("무한 배포", isOn: Binding(
                                 get: { viewModel.isUnlimitedDeployment },
                                 set: { viewModel.isUnlimitedDeployment = $0 }
