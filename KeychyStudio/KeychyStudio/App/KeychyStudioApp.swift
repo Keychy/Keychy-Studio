@@ -24,7 +24,7 @@ struct KeychyStudioApp: App {
     var body: some Scene {
         WindowGroup {
             if authViewModel.isLoggedIn {
-                ContentView()
+                ContentView(authViewModel: authViewModel)
             } else {
                 LoginView(viewModel: authViewModel)
             }

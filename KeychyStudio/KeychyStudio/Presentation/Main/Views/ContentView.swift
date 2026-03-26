@@ -40,6 +40,7 @@ enum SidebarItem: String, CaseIterable {
 }
 
 struct ContentView: View {
+    var authViewModel: AuthViewModel
     @State private var selection: SidebarItem = .sendNotification
     @State private var announcementVM = AnnouncementViewModel()
 
@@ -53,6 +54,17 @@ struct ContentView: View {
                         }
                     }
                 }
+            }
+            .safeAreaInset(edge: .bottom) {
+                Button(action: { authViewModel.signOut() }) {
+                    Label("로그아웃", systemImage: "rectangle.portrait.and.arrow.right")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
             .navigationSplitViewColumnWidth(180)
 
@@ -77,5 +89,5 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    ContentView(authViewModel: AuthViewModel())
 }
